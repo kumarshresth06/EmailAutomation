@@ -38,12 +38,12 @@ C = {
     "tag_btn":    ("#E4E4E7", "#2D3555"),   # tag button background
 }
 
-FONT_H1    = ("SF Pro Display", 22, "bold")
-FONT_H2    = ("SF Pro Display", 14, "bold")
-FONT_BODY  = ("SF Pro Text",    12)
-FONT_SMALL = ("SF Pro Text",    11)
-FONT_MONO  = ("JetBrains Mono", 11)
-FONT_LABEL = ("SF Pro Text",    12, "bold")
+FONT_H1    = ("SF Pro Display", 26, "bold")
+FONT_H2    = ("SF Pro Display", 18, "bold")
+FONT_BODY  = ("SF Pro Text",    16)
+FONT_SMALL = ("SF Pro Text",    14)
+FONT_MONO  = ("JetBrains Mono", 14)
+FONT_LABEL = ("SF Pro Text",    16, "bold")
 
 # Fallback fonts if SF / JetBrains not installed
 try:
@@ -52,12 +52,12 @@ try:
     if _test.actual()["family"] not in ("SF Pro Display", ".AppleSystemUIFont"):
         raise ValueError
 except Exception:
-    FONT_H1    = ("Helvetica Neue", 22, "bold")
-    FONT_H2    = ("Helvetica Neue", 14, "bold")
-    FONT_BODY  = ("Helvetica Neue", 12)
-    FONT_SMALL = ("Helvetica Neue", 11)
-    FONT_MONO  = ("Courier New",    11)
-    FONT_LABEL = ("Helvetica Neue", 12, "bold")
+    FONT_H1    = ("Helvetica Neue", 26, "bold")
+    FONT_H2    = ("Helvetica Neue", 18, "bold")
+    FONT_BODY  = ("Helvetica Neue", 16)
+    FONT_SMALL = ("Helvetica Neue", 14)
+    FONT_MONO  = ("Courier New",    14)
+    FONT_LABEL = ("Helvetica Neue", 16, "bold")
 
 
 def make_card(parent, **kwargs):
@@ -140,7 +140,7 @@ body {
     background: #FAF9F6;
     color: #18181B;
     font-family: -apple-system, 'Helvetica Neue', Arial, sans-serif;
-    font-size: 14px;
+    font-size: 16px;
     line-height: 1.75;
     padding: 28px 36px 48px;
 }
@@ -151,9 +151,9 @@ h1, h2, h3 {
     padding-bottom: 6px;
     border-bottom: 1px solid #E4E4E7;
 }
-h1 { font-size: 22px; color: #18181B; margin-top: 0; }
-h2 { font-size: 18px; color: #3F3F46; }
-h3 { font-size: 15px; color: #52525B; }
+h1 { font-size: 26px; color: #18181B; margin-top: 0; }
+h2 { font-size: 22px; color: #3F3F46; }
+h3 { font-size: 18px; color: #52525B; }
 p  { margin: 10px 0; color: #3F3F46; }
 ul, ol {
     margin: 8px 0 8px 22px;
@@ -177,7 +177,7 @@ code {
     padding: 1px 6px;
     border-radius: 4px;
     font-family: 'JetBrains Mono', 'Courier New', monospace;
-    font-size: 13px;
+    font-size: 15px;
 }
 pre {
     background: #F4F4F5;
@@ -207,7 +207,7 @@ body {
     background: #0F1117;
     color: #F1F5F9;
     font-family: -apple-system, 'Helvetica Neue', Arial, sans-serif;
-    font-size: 14px;
+    font-size: 16px;
     line-height: 1.75;
     padding: 28px 36px 48px;
 }
@@ -218,9 +218,9 @@ h1, h2, h3 {
     padding-bottom: 6px;
     border-bottom: 1px solid #2E3350;
 }
-h1 { font-size: 22px; color: #F1F5F9; margin-top: 0; }
-h2 { font-size: 18px; color: #CBD5E1; }
-h3 { font-size: 15px; color: #94A3B8; }
+h1 { font-size: 26px; color: #F1F5F9; margin-top: 0; }
+h2 { font-size: 22px; color: #CBD5E1; }
+h3 { font-size: 18px; color: #94A3B8; }
 p  { margin: 10px 0; color: #CBD5E1; }
 ul, ol {
     margin: 8px 0 8px 22px;
@@ -244,7 +244,7 @@ code {
     padding: 1px 6px;
     border-radius: 4px;
     font-family: 'JetBrains Mono', 'Courier New', monospace;
-    font-size: 13px;
+    font-size: 15px;
 }
 pre {
     background: #22263A;
