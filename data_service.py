@@ -38,6 +38,14 @@ class DataHandler:
     def has_email_column(self):
         return self.email_col is not None
 
+    def has_fallback_columns(self):
+        if self.df is None: return False
+        required = ['First Name', 'Last Name', 'Company']
+        for r in required:
+            if r not in self.df.columns:
+                return False
+        return True
+
     def save_state(self):
         if self.ext == '.csv':
             self.df.to_csv(self.filepath, index=False)
@@ -50,11 +58,24 @@ class DataHandler:
         self.save_state()
 
     def get_sample_row(self, placeholders):
-        if self.df is None or not self.email_col:
+        if self.df is None:
             return None
         
         for index, row in self.df.iterrows():
-            if pd.isna(row[self.email_col]) or not str(row[self.email_col]).strip():
+            has_valid_dest = False
+            
+            # Check direct email first
+            if self.email_col and not pd.isna(row[self.email_col]) and str(row[self.email_col]).strip() != '':
+                has_valid_dest = True
+            # Fallback check
+            elif self.has_fallback_columns():
+                fn = str(row['First Name']).strip() if not pd.isna(row['First Name']) else ''
+                ln = str(row['Last Name']).strip() if not pd.isna(row['Last Name']) else ''
+                co = str(row['Company']).strip() if not pd.isna(row['Company']) else ''
+                if fn and ln and co:
+                    has_valid_dest = True
+                    
+            if not has_valid_dest:
                 continue
                 
             has_blank = False

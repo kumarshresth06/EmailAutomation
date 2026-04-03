@@ -10,6 +10,7 @@ import pandas as pd
 
 from data_service import DataHandler
 from email_service import EmailSender
+from email_guesser import EmailDerivationService
 
 ctk.set_appearance_mode("System")
 ctk.set_default_color_theme("blue")
@@ -18,8 +19,8 @@ class ColdOutreachUI(ctk.CTk):
     def __init__(self):
         super().__init__()
         self.title("Cold Outreach Automator")
-        self.geometry("800x650")
-        self.minsize(800, 650)
+        self.geometry("900x750")
+        self.minsize(900, 700)
         
         self.stop_event = threading.Event()
         self.filepath = None
@@ -31,7 +32,8 @@ class ColdOutreachUI(ctk.CTk):
     def setup_ui(self):
         self.grid_columnconfigure(0, weight=1)
         self.grid_columnconfigure(1, weight=1)
-        self.grid_rowconfigure(2, weight=1)
+        self.grid_rowconfigure(2, weight=3)
+        self.grid_rowconfigure(4, weight=1)
 
         self.cred_frame = ctk.CTkFrame(self)
         self.cred_frame.grid(row=0, column=0, columnspan=2, padx=10, pady=10, sticky="ew")
@@ -73,8 +75,15 @@ class ColdOutreachUI(ctk.CTk):
         ctk.CTkButton(self.toolbar_frame, text="Line Break", width=70, command=lambda: self.insert_tag("<br>\n", "")).pack(side="left", padx=2)
         
         ctk.CTkLabel(self.template_frame, text="HTML Template\n(Use {{Column_Name}}):", font=("Arial", 12, "bold")).grid(row=2, column=0, padx=10, pady=5, sticky="ne")
-        self.template_text = ctk.CTkTextbox(self.template_frame)
+        self.template_text = ctk.CTkTextbox(self.template_frame, wrap="word")
         self.template_text.grid(row=2, column=1, padx=10, pady=5, sticky="nsew")
+
+        sample_template = (
+            "<p>Hi {{First Name}},</p>\n\n"
+            "<p>I noticed your great work recently at {{Company}} and wanted to reach out regarding an opportunity.</p>\n\n"
+            "<p>Best regards,<br>\nYour Name</p>"
+        )
+        self.template_text.insert("1.0", sample_template)
 
         self.action_frame = ctk.CTkFrame(self)
         self.action_frame.grid(row=3, column=0, columnspan=2, padx=10, pady=10, sticky="ew")
@@ -96,6 +105,7 @@ class ColdOutreachUI(ctk.CTk):
         self.log_frame = ctk.CTkFrame(self)
         self.log_frame.grid(row=4, column=0, columnspan=2, padx=10, pady=(0, 10), sticky="nsew")
         self.log_frame.grid_columnconfigure(0, weight=1)
+        self.log_frame.grid_rowconfigure(0, weight=1)
         
         self.log_box = ctk.CTkTextbox(self.log_frame, height=150, state="disabled")
         self.log_box.grid(row=0, column=0, padx=10, pady=10, sticky="nsew")
@@ -131,9 +141,17 @@ class ColdOutreachUI(ctk.CTk):
     def browse_file(self):
         filename = filedialog.askopenfilename(filetypes=[("Excel Files", "*.xlsx"), ("CSV Files", "*.csv")])
         if filename:
-            self.filepath = filename
-            self.lbl_filepath.configure(text=filename, text_color=("black", "white"))
-            self.log(f"Selected file: {filename}")
+            try:
+                handler = DataHandler(filename)
+                handler.load_data()
+                if not handler.has_email_column() and not handler.has_fallback_columns():
+                    messagebox.showerror("Validation Error", "The selected file MUST contain an 'Email' column OR all three: 'First Name', 'Last Name', 'Company'.")
+                    return
+                self.filepath = filename
+                self.lbl_filepath.configure(text=filename, text_color=("black", "white"))
+                self.log(f"Selected & Validated file: {filename}")
+            except Exception as e:
+                messagebox.showerror("Validation Error", f"Could not read the file properly: {str(e)}")
 
     def toggle_ui_state(self, running):
         state = "disabled" if running else "normal"
@@ -196,8 +214,8 @@ class ColdOutreachUI(ctk.CTk):
             self.after(0, lambda: self.toggle_ui_state(False))
             return
             
-        if not data_handler.has_email_column():
-            self.log("ERROR: Spreadsheet must have an 'Email' or 'email' column.")
+        if not data_handler.has_email_column() and not data_handler.has_fallback_columns():
+            self.log("ERROR: Spreadsheet must have an 'Email' column OR 'First Name', 'Last Name', 'Company'.")
             self.is_running = False
             self.after(0, lambda: self.toggle_ui_state(False))
             return
@@ -263,13 +281,15 @@ class ColdOutreachUI(ctk.CTk):
             self.after(0, lambda: self.toggle_ui_state(False))
             return
             
-        if not data_handler.has_email_column():
-            self.log("ERROR: Spreadsheet must have an 'Email' or 'email' column.")
+        if not data_handler.has_email_column() and not data_handler.has_fallback_columns():
+            self.log("ERROR: Spreadsheet must have an 'Email' column OR 'First Name', 'Last Name', 'Company'.")
             self.is_running = False
             self.after(0, lambda: self.toggle_ui_state(False))
             return
 
         email_sender = EmailSender(email_addr, app_pass, logger=self.log)
+        derivation_service = EmailDerivationService(logger=self.log)
+
         try:
             email_sender.connect()
         except Exception as e:
@@ -286,11 +306,23 @@ class ColdOutreachUI(ctk.CTk):
                     self.log("Campaign stopped by user.")
                     break
 
-                target_email = str(row[data_handler.email_col]).strip()
+                # Extract Target Email
+                target_email = ""
+                if data_handler.email_col and not pd.isna(row[data_handler.email_col]):
+                    target_email = str(row[data_handler.email_col]).strip()
+                
                 status = str(row['Status']).strip().lower()
 
-                if pd.isna(row[data_handler.email_col]) or not target_email or target_email == 'nan':
-                    self.log(f"Row {index}: Missing email address. Skipping.")
+                if target_email == 'nan' or not target_email:
+                    # Trigger Derivation Hook
+                    fn = row.get('First Name', '')
+                    ln = row.get('Last Name', '')
+                    co = row.get('Company', '')
+                    
+                    target_email = derivation_service.guess_email(fn, ln, co)
+
+                if not target_email:
+                    self.log(f"Row {index}: Missing explicit address and derivation failed. Skipping.")
                     continue
 
                 if status == 'sent':

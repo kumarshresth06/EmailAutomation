@@ -37,8 +37,8 @@ Since you are using a third-party script to access your Gmail, Google requires a
 The application accepts data files in both **CSV (`.csv`)** and **Excel (`.xlsx`)** formats. For the software to correctly read your contacts and populate the templates, ensure your spreadsheet conforms to the following rules:
 
 1. **Mandatory Email Column:**
-    * The spreadsheet **MUST** include a column representing the recipient's email.
-    * The column header must be named exactly **`Email`** or **`email`**.
+    * The spreadsheet **MUST** include a column representing the recipient's email named exactly **`Email`** or **`email`**.
+    * **Alternatively**, if exact emails are unknown, the Automator can heuristically derive them for you! In this fallback case, your spreadsheet MUST contain exactly these three columns: **`First Name`**, **`Last Name`**, and **`Company`**.
 
 2. **Placeholder Columns:**
     * If you use a placeholder like `{{Role}}` in your email template or subject line, you **MUST** have an exact corresponding column named **`Role`** in your sheet.
@@ -66,7 +66,12 @@ The application accepts data files in both **CSV (`.csv`)** and **Excel (`.xlsx`
     * Once this action runs returning an affirmative condition, the `Start Campaign` functionality will light up.
     * *Power User Override:* A checkbox titled **"Override Test Valid."** exists alongside it. When checked, the start action becomes immediately accessible.
 
-3. **In-Built Anti-Spam Throttling:**
+3. **Dynamic Email Derivation (Google Search Scraper):**
+    * If your uploaded spreadsheet misses an exact `Email` column completely, the system triggers the derivation engine inline.
+    * It scrubs probable domains from the supplied `Company` strings, generates standard corporate heuristics (`first.last`, `f_last`, etc.), and actively pipes queries against Google implicitly via HTTP headers!
+    * By evaluating HTML search returns for recognized regex overlaps against the inferred domain, it dynamically executes its 'best shot' to pull a finalized mailing constraint prior to failure.
+
+4. **In-Built Anti-Spam Throttling:**
     * Sending dozens of synchronized emails sequentially often flags standard Google accounts as aggressive spam vectors, leading to suspension tracking limits.
     * This software leverages a randomly generated wait window ranging strictly between **45 to 90 seconds** traversing successive dispatches. 
     * Please account for this intended operational behavior in your workflow cadence.

@@ -14,7 +14,8 @@ To sustain a scalable and testable logic matrix, the monolithic structure has be
 
 ## 🚀 Features & Functionality
 - **Rich Text HTML Editor Inline**: The main dashboard possesses formatting logic wrapping highlighted strings locally in `<b>`, `<i>`, or `<a href="...">` nodes dynamically. Use double braces `{{}}` directly mapped to columns.
-- **Test-First Safety Policy**: By default, the `Start Campaign` button is restricted dynamically. You *must* fire a `Send Test Email` first, which samples your first clean dataset row, configures the output, and shoots it directly back into your linked login inbox. Alternatively, check the `Override` box to bypass.
+- **Dynamic Email Derivation**: If your spreadsheet is missing an `Email` column completely or contains blank email rows, the system will automatically attempt to heuristically resolve the recipient using their `First Name`, `Last Name`, and `Company`. It scrapes permutations and explicitly bounces requests off Google's web search to identify the likely exact corporate domain structure in real-time!
+- **Test-First Safety Policy**: By default, the `Start Campaign` button is restricted dynamically. You *must* fire a `Send Test Email` first, which samples your first clean dataset row, configures the output, and shoots it directly back into your linked login inbox (the Gmail Address you entered in the top credentials field). Alternatively, check the `Override` box to bypass.
 - **Automated Anti-Spam Human Emulator**: In bulk mode, trailing successful dispatches face a mandatory jitter-delay traversing a `45-90` seconds timeout constraint natively thwarting rapid-burst suspension penalties standard on generic Gmail accounts.
 - **Idempotency**: It implicitly traces iterations under tracking columns `Status` & `Date_Sent` injected intelligently on start. Subsequent batch restarts skip emails designated successfully "Sent".
 
