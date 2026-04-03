@@ -1,5 +1,6 @@
 customtkinter
 pandas
 openpyxl
+requests
 pytest
 pytest-mock
