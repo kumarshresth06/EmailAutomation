@@ -18,24 +18,24 @@ from email_service import EmailSender
 from email_guesser import EmailDerivationService
 
 # ── Theme ──────────────────────────────────────────────────────────────────────
-ctk.set_appearance_mode("Dark")
+ctk.set_appearance_mode("System")
 ctk.set_default_color_theme("blue")
 
 # Color palette
 C = {
-    "bg":         "#0F1117",   # deepest background
-    "surface":    "#1A1D27",   # card background
-    "surface2":   "#22263A",   # elevated card
-    "border":     "#2E3350",   # subtle border
-    "accent":     "#6C63FF",   # indigo accent
-    "accent2":    "#4F8EF7",   # blue accent
-    "success":    "#22C55E",   # green
-    "danger":     "#EF4444",   # red
-    "warning":    "#F59E0B",   # amber
-    "text":       "#F1F5F9",   # primary text
-    "text_muted": "#64748B",   # muted text
-    "text_dim":   "#94A3B8",   # dim text
-    "tag_btn":    "#2D3555",   # tag button background
+    "bg":         ("#FAF9F6", "#0F1117"),   # deepest background
+    "surface":    ("#FFFFFF", "#1A1D27"),   # card background
+    "surface2":   ("#F4F4F5", "#22263A"),   # elevated card
+    "border":     ("#E4E4E7", "#2E3350"),   # subtle border
+    "accent":     ("#6C63FF", "#6C63FF"),   # indigo accent
+    "accent2":    ("#4F8EF7", "#4F8EF7"),   # blue accent
+    "success":    ("#16A34A", "#22C55E"),   # green
+    "danger":     ("#DC2626", "#EF4444"),   # red
+    "warning":    ("#D97706", "#F59E0B"),   # amber
+    "text":       ("#18181B", "#F1F5F9"),   # primary text
+    "text_muted": ("#52525B", "#64748B"),   # muted text
+    "text_dim":   ("#A1A1AA", "#94A3B8"),   # dim text
+    "tag_btn":    ("#E4E4E7", "#2D3555"),   # tag button background
 }
 
 FONT_H1    = ("SF Pro Display", 22, "bold")
@@ -131,7 +131,77 @@ class TagButton(ctk.CTkButton):
 
 
 # ── Help Viewer ───────────────────────────────────────────────────────────────
-HELP_CSS = """
+def get_help_css():
+    mode = ctk.get_appearance_mode()
+    if mode == "Light":
+        return """
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+    background: #FAF9F6;
+    color: #18181B;
+    font-family: -apple-system, 'Helvetica Neue', Arial, sans-serif;
+    font-size: 14px;
+    line-height: 1.75;
+    padding: 28px 36px 48px;
+}
+h1, h2, h3 {
+    font-weight: 700;
+    margin-top: 32px;
+    margin-bottom: 10px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid #E4E4E7;
+}
+h1 { font-size: 22px; color: #18181B; margin-top: 0; }
+h2 { font-size: 18px; color: #3F3F46; }
+h3 { font-size: 15px; color: #52525B; }
+p  { margin: 10px 0; color: #3F3F46; }
+ul, ol {
+    margin: 8px 0 8px 22px;
+    color: #3F3F46;
+}
+li { margin: 6px 0; }
+a  { color: #6C63FF; text-decoration: none; }
+a:hover { text-decoration: underline; }
+blockquote {
+    border-left: 3px solid #6C63FF;
+    background: #FFFFFF;
+    margin: 14px 0;
+    padding: 10px 18px;
+    border-radius: 0 8px 8px 0;
+    color: #52525B;
+    font-style: italic;
+}
+code {
+    background: #F4F4F5;
+    color: #6C63FF;
+    padding: 1px 6px;
+    border-radius: 4px;
+    font-family: 'JetBrains Mono', 'Courier New', monospace;
+    font-size: 13px;
+}
+pre {
+    background: #F4F4F5;
+    border: 1px solid #E4E4E7;
+    border-radius: 8px;
+    padding: 14px 18px;
+    overflow-x: auto;
+    margin: 14px 0;
+}
+pre code {
+    background: transparent;
+    padding: 0;
+    color: #52525B;
+}
+hr {
+    border: none;
+    border-top: 1px solid #E4E4E7;
+    margin: 28px 0;
+}
+strong { color: #18181B; font-weight: 700; }
+em     { color: #52525B; }
+"""
+    else:
+        return """
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body {
     background: #0F1117;
@@ -260,7 +330,7 @@ class HelpWindow(ctk.CTkToplevel):
 <html lang='en'>
 <head>
 <meta charset='UTF-8'>
-<style>{HELP_CSS}</style>
+<style>{get_help_css()}</style>
 </head>
 <body>
 {body_html}
@@ -336,6 +406,18 @@ class ColdOutreachUI(ctk.CTk):
         ctk.CTkLabel(title_col, text="Personalised email campaigns at scale",
                      font=FONT_SMALL, text_color=C["text_muted"]).pack(anchor="w")
 
+        # Theme switcher
+        self.theme_switch = ctk.CTkOptionMenu(
+            hdr, values=["System", "Light", "Dark"],
+            command=self._change_theme,
+            width=90, height=34, font=FONT_SMALL,
+            fg_color=C["surface2"], button_color=C["surface2"],
+            button_hover_color=C["border"], text_color=C["text_dim"]
+        )
+        current_mode = ctk.get_appearance_mode().capitalize()
+        self.theme_switch.set(current_mode if current_mode in ["Light", "Dark"] else "System")
+        self.theme_switch.pack(side="right", padx=(8, 20), pady=17)
+
         # Help button
         ctk.CTkButton(
             hdr, text="?  Help", width=80, height=34,
@@ -343,7 +425,7 @@ class ColdOutreachUI(ctk.CTk):
             fg_color=C["surface2"], hover_color=C["accent"],
             text_color=C["text_dim"], border_width=1, border_color=C["border"],
             command=self._open_help
-        ).pack(side="right", padx=(8, 20), pady=17)
+        ).pack(side="right", padx=(8, 8), pady=17)
 
         # Status indicator (right side)
         status_row = ctk.CTkFrame(hdr, fg_color="transparent")
@@ -602,13 +684,18 @@ class ColdOutreachUI(ctk.CTk):
             corner_radius=8, state="disabled")
         self.log_box.grid(row=1, column=0, padx=16, pady=(0, 16), sticky="nsew")
 
-        # Tag colours for log
+        self._update_log_tags()
+
+    def _update_log_tags(self):
+        """Update standard Tkinter tag configs based on currenct appearance mode"""
+        mode = ctk.get_appearance_mode()
+        idx = 0 if mode == "Light" else 1
         inner = self.log_box._textbox
-        inner.tag_config("ts",      foreground=C["text_muted"])
-        inner.tag_config("info",    foreground=C["text_dim"])
-        inner.tag_config("success", foreground=C["success"])
-        inner.tag_config("error",   foreground=C["danger"])
-        inner.tag_config("warning", foreground=C["warning"])
+        inner.tag_config("ts",      foreground=C["text_muted"][idx])
+        inner.tag_config("info",    foreground=C["text_dim"][idx])
+        inner.tag_config("success", foreground=C["success"][idx])
+        inner.tag_config("error",   foreground=C["danger"][idx])
+        inner.tag_config("warning", foreground=C["warning"][idx])
 
     # ── Helpers ────────────────────────────────────────────────────────────────
     def _step_header(self, parent, num, title, row):
@@ -638,6 +725,10 @@ class ColdOutreachUI(ctk.CTk):
             self._help_win.focus_force()
         else:
             self._help_win = HelpWindow(self)
+
+    def _change_theme(self, new_appearance_mode: str):
+        ctk.set_appearance_mode(new_appearance_mode)
+        self._update_log_tags()
 
     # ── UI State ───────────────────────────────────────────────────────────────
     def set_status(self, state: str, label: str):
