@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=Cold Outreach Automator
+Comment=Automate personalized cold email campaigns
+Exec=ColdOutreachAutomator
+Icon=ColdOutreachAutomator
+Categories=Office;Network;Email;
+Terminal=false
+StartupNotify=true
+MimeType=application/vnd.ms-excel;text/csv;
