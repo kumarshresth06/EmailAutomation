@@ -2,5 +2,6 @@ customtkinter
 pandas
 openpyxl
 requests
+beautifulsoup4
 pytest
 pytest-mock
