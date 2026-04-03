@@ -110,6 +110,7 @@ datas += collect_data_files("customtkinter")
 # Your own application assets (icon, any future images/stylesheets)
 datas += [
     (os.path.join(PROJECT_ROOT, "assets"), "assets"),
+    (os.path.join(PROJECT_ROOT, "helper.md"), "."),
 ]
 
 # ── Binaries to EXCLUDE (keeps the bundle lean) ───────────────────────────────

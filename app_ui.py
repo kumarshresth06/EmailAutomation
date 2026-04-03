@@ -244,8 +244,12 @@ class HelpWindow(ctk.CTkToplevel):
         self.focus_force()
 
     def _load_content(self):
-        helper_path = os.path.join(
-            os.path.dirname(os.path.abspath(__file__)), "helper.md")
+        try:
+            base_path = sys._MEIPASS
+        except Exception:
+            base_path = os.path.dirname(os.path.abspath(__file__))
+        
+        helper_path = os.path.join(base_path, "helper.md")
         try:
             raw = open(helper_path, "r", encoding="utf-8").read()
             body_html = md_lib.markdown(
