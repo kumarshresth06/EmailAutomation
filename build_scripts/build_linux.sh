@@ -97,6 +97,12 @@ fi
 
 # ── Step 7: Build the AppImage ────────────────────────────────
 info "Building AppImage..."
+# Ensure permissions are correct inside AppDir
+chmod -R a+r "$APPDIRFULL"
+find "$APPDIRFULL" -type d -exec chmod a+x {} +
+chmod +x "${APPDIRFULL}/AppRun"
+chmod +x "${APPDIRFULL}/usr/bin/${APP_NAME}"
+
 ARCH=x86_64 "$APPIMAGETOOL" "$APPDIRFULL" "${DIST_DIR}/${APPIMAGE_NAME}"
 
 deactivate

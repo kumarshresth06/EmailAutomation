@@ -2,8 +2,9 @@ import os
 import pandas as pd
 
 class DataHandler:
-    def __init__(self, filepath, logger=None):
+    def __init__(self, filepath, output_path=None, logger=None):
         self.filepath = filepath
+        self.output_path = output_path or filepath
         self.ext = os.path.splitext(filepath)[1].lower()
         self.logger = logger
         self.df = None
@@ -23,10 +24,8 @@ class DataHandler:
 
         if 'Status' not in self.df.columns:
             self.df['Status'] = ""
-            self.log("Created 'Status' column.")
         if 'Date_Sent' not in self.df.columns:
             self.df['Date_Sent'] = ""
-            self.log("Created 'Date_Sent' column.")
             
         self.email_col = 'Email' if 'Email' in self.df.columns else 'email' if 'email' in self.df.columns else None
 
@@ -48,14 +47,15 @@ class DataHandler:
 
     def save_state(self):
         if self.ext == '.csv':
-            self.df.to_csv(self.filepath, index=False)
+            self.df.to_csv(self.output_path, index=False)
         else:
-            self.df.to_excel(self.filepath, index=False)
+            self.df.to_excel(self.output_path, index=False)
 
     def mark_sent(self, index, timestamp):
         self.df.at[index, 'Status'] = 'Sent'
         self.df.at[index, 'Date_Sent'] = timestamp
         self.save_state()
+
 
     def get_sample_row(self, placeholders):
         if self.df is None:

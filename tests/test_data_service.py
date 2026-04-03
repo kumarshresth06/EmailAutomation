@@ -58,3 +58,24 @@ def test_mark_sent(sample_csv):
     
     df_reloaded = pd.read_csv(sample_csv)
     assert df_reloaded.at[1, 'Status'] == 'Sent'
+
+
+def test_output_path(sample_csv, tmp_path):
+    output_path = str(tmp_path / "output_data.csv")
+    handler = DataHandler(sample_csv, output_path=output_path)
+    handler.load_data()
+    
+    handler.mark_sent(1, "2026-04-03 10:00:00")
+    
+    # Check output file has 'Sent'
+    df_output = pd.read_csv(output_path)
+    assert df_output.at[1, 'Status'] == 'Sent'
+    
+    # Check original file does NOT have 'Sent' (it should be empty or default)
+    df_original = pd.read_csv(sample_csv)
+    # The original file was loaded and Status/Date_Sent were added in memory, 
+    # but never saved back to sample_csv in this test because output_path was used.
+    # Actually, in the test fixture it's a fresh file.
+    # Let's verify it doesn't have 'Sent'
+    assert 'Status' not in df_original.columns or pd.isna(df_original.at[1, 'Status']) or df_original.at[1, 'Status'] == ""
+

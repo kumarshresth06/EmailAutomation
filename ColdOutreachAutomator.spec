@@ -81,6 +81,18 @@ hidden_imports = [
     "time",
     "random",
     "datetime",
+    "secrets",
+    "ssl",
+    "hashlib",
+    "bisect",
+    "copy",
+    "inspect",
+    "json",
+    "logging",
+    "shutil",
+    "tempfile",
+    "traceback",
+    "uuid",
 ]
 
 # Collect all sub-modules for packages that use dynamic imports internally
@@ -108,7 +120,6 @@ excludes = [
     "sklearn",
     "skimage",
     "cv2",
-    "PIL",           # not used; remove if you add Pillow later
     "IPython",
     "notebook",
     "jupyter",
@@ -122,9 +133,6 @@ excludes = [
     "py",
     "_pytest",
     "setuptools",
-    "pkg_resources",
-    "distutils",
-    "lib2to3",
     "asyncio",       # not used in this app
     "multiprocessing",
 ]

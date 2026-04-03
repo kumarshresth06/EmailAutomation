@@ -286,6 +286,7 @@ class ColdOutreachUI(ctk.CTk):
 
         self.stop_event = threading.Event()
         self.filepath = None
+        self.output_path = None
         self.is_running = False
         self.test_email_sent = False
         self._emails_sent = 0
@@ -431,12 +432,17 @@ class ColdOutreachUI(ctk.CTk):
             font=FONT_SMALL, text_color=C["text_muted"], wraplength=220)
         self._file_hint.grid(row=1, column=0, padx=8, pady=(2, 10))
 
+        self._out_hint = ctk.CTkLabel(
+            card, text="",
+            font=FONT_SMALL, text_color=C["text_dim"], wraplength=350)
+        self._out_hint.grid(row=2, column=0, padx=16, pady=(0, 10), sticky="ew")
+
         self.btn_browse = ctk.CTkButton(
             card, text="Browse CSV / Excel",
             font=FONT_LABEL, height=38, corner_radius=8,
             fg_color=C["accent2"], hover_color="#3B7DE8",
             command=self.browse_file)
-        self.btn_browse.grid(row=2, column=0, padx=16, pady=(0, 18), sticky="ew")
+        self.btn_browse.grid(row=3, column=0, padx=16, pady=(0, 18), sticky="ew")
 
     # ── Template Card ──────────────────────────────────────────────────────────
     def _build_template(self, parent, row):
@@ -709,7 +715,35 @@ class ColdOutreachUI(ctk.CTk):
             filetypes=[("Excel Files", "*.xlsx"), ("CSV Files", "*.csv")])
         if filename:
             try:
-                handler = DataHandler(filename)
+                base, ext = os.path.splitext(filename)
+                results_file = f"{base}_CAMPAIGN{ext}"
+                
+                if base.endswith("_CAMPAIGN"):
+                    self.filepath = filename
+                    self.output_path = filename
+                elif os.path.exists(results_file):
+                    # Ask to resume
+                    res = messagebox.askyesno(
+                        "Resume Campaign?",
+                        f"A campaign results file already exists for this list:\n\n"
+                        f"{os.path.basename(results_file)}\n\n"
+                        f"Would you like to RESUME this campaign (sending only unsent emails)?"
+                    )
+                    if res:
+                        self.filepath = results_file
+                        self.output_path = results_file
+                        self.log(f"🔄 Resume mode: Using existing results file.")
+                    else:
+                        self.filepath = filename
+                        self.output_path = results_file
+                        self.log(f"🆕 Start fresh: Re-initializing results file.")
+                else:
+                    self.filepath = filename
+                    self.output_path = results_file
+                    self.log(f"📂 Loaded: {filename}")
+                
+                handler = DataHandler(self.filepath, output_path=self.output_path)
+
                 handler.load_data()
                 if not handler.has_email_column() and not handler.has_fallback_columns():
                     messagebox.showerror(
@@ -717,14 +751,18 @@ class ColdOutreachUI(ctk.CTk):
                         "The file MUST have an 'Email' column OR all three: "
                         "'First Name', 'Last Name', 'Company'.")
                     return
-                self.filepath = filename
-                short = filename.split("/")[-1]
+                # self.filepath is already set above correctly
+                short = self.filepath.split("/")[-1]
+                out_short = self.output_path.split("/")[-1]
                 self._file_hint.configure(text=f"✅ {short}",
                                           text_color=C["success"])
-                self.log(f"Loaded & validated: {filename}")
+                self._out_hint.configure(text=f"↳ Campaign Results: {out_short}")
+                self.log(f"Results will be saved/updated at: {self.output_path}")
             except Exception as e:
+
                 messagebox.showerror("Validation Error",
                                      f"Could not read file: {e}")
+
 
     # ── HTML tag insertion ─────────────────────────────────────────────────────
     def insert_tag(self, start_tag, end_tag):
@@ -766,7 +804,7 @@ class ColdOutreachUI(ctk.CTk):
                          daemon=True).start()
 
     def run_test_task(self, email_addr, app_pass, subject, template):
-        data_handler = DataHandler(self.filepath, logger=self.log)
+        data_handler = DataHandler(self.filepath, output_path=self.output_path, logger=self.log)
         try:
             data_handler.load_data()
         except Exception as e:
@@ -842,9 +880,18 @@ class ColdOutreachUI(ctk.CTk):
                          daemon=True).start()
 
     def run_campaign_task(self, email_addr, app_pass, subject, template):
-        data_handler = DataHandler(self.filepath, logger=self.log)
+        data_handler = DataHandler(self.filepath, output_path=self.output_path, logger=self.log)
         try:
             data_handler.load_data()
+            
+            # Initial check for already sent rows
+            already_sent = 0
+            if 'Status' in data_handler.df.columns:
+                already_sent = len(data_handler.df[data_handler.df['Status'].str.lower() == 'sent'])
+            
+            if already_sent > 0:
+                self.log(f"📋 Found {already_sent} recipients already marked as 'Sent'. Skipping them.")
+            
         except Exception as e:
             self.log(f"ERROR loading file: {e}")
             self.is_running = False

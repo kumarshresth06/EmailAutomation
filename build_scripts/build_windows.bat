@@ -40,16 +40,10 @@ echo.
 REM ── Step 4: Convert PNG icon to ICO ──────────────────────────
 if not exist "assets\icon.ico" (
     echo [INFO] Generating icon.ico from icon.png...
-    python -c "
-from PIL import Image
-import struct, zlib, os
-img = Image.open('assets/icon.png').convert('RGBA')
-sizes = [16, 32, 48, 64, 128, 256]
-icons = []
-for s in sizes:
-    icons.append(img.resize((s, s), Image.LANCZOS))
-img.save('assets/icon.ico', format='ICO', sizes=[(s, s) for s in sizes])
-print('icon.ico created.')
+    python -c "from PIL import Image; img = Image.open('assets/icon.png').convert('RGBA'); sizes = [16, 32, 48, 64, 128, 256]; img.save('assets/icon.ico', format='ICO', sizes=[(s, s) for s in sizes]); print('icon.ico created.')"
+    if not exist "assets\icon.ico" (
+        echo [WARN] Icon conversion failed. Place icon.ico manually in assets\.
+    )
 "
     if errorlevel 1 (
         echo [WARN] Pillow not available; icon conversion skipped. Place icon.ico manually in assets\.
