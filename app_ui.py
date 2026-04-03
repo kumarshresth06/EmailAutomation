@@ -822,8 +822,10 @@ class ColdOutreachUI(ctk.CTk):
 
         missing_cols = data_handler.get_missing_placeholders(placeholders)
         if missing_cols:
-            self.log(f"ERROR: Missing columns: {', '.join(missing_cols)}")
+            err_msg = f"Missing columns in data file for placeholders: {', '.join(missing_cols)}"
+            self.log(f"ERROR: {err_msg}")
             self.is_running = False
+            self.after(0, lambda e=err_msg: messagebox.showerror("Missing Placeholders", e))
             self.after(0, lambda: self.toggle_ui_state(False))
             return
 
@@ -907,8 +909,10 @@ class ColdOutreachUI(ctk.CTk):
 
         missing_cols = data_handler.get_missing_placeholders(placeholders)
         if missing_cols:
-            self.log(f"ERROR: Missing columns: {', '.join(missing_cols)}")
+            err_msg = f"Missing columns in data file for placeholders: {', '.join(missing_cols)}"
+            self.log(f"ERROR: {err_msg}")
             self.is_running = False
+            self.after(0, lambda e=err_msg: messagebox.showerror("Missing Placeholders", e))
             self.after(0, lambda: self.toggle_ui_state(False))
             return
 

@@ -29,7 +29,12 @@ class EmailSender:
         has_blank_placeholder = False
 
         for p in placeholders:
-            val = row[p]
+            val = None
+            for col in row.index:
+                if str(col).lower() == p.lower():
+                    val = row[col]
+                    break
+
             if pd.isna(val) or str(val).strip() == '':
                 has_blank_placeholder = True
                 break

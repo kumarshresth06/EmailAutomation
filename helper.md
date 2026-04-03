@@ -36,13 +36,14 @@ Since you are using a third-party script to access your Gmail, Google requires a
 
 The application accepts data files in both **CSV (`.csv`)** and **Excel (`.xlsx`)** formats. For the software to correctly read your contacts and populate the templates, ensure your spreadsheet conforms to the following rules:
 
-1. **Mandatory Email Column:**
+1. **Mandatory Placeholders:**
     * The spreadsheet **MUST** include a column representing the recipient's email named exactly **`Email`** or **`email`**.
-    * **Alternatively**, if exact emails are unknown, the Automator can heuristically derive them for you! In this fallback case, your spreadsheet MUST contain exactly these three columns: **`First Name`**, **`Last Name`**, and **`Company`**.
+    * **Alternatively**, if exact emails are unknown, your spreadsheet MUST contain exactly these three columns: **`First Name`**, **`Last Name`**, and **`Company`**.
 
-2. **Placeholder Columns:**
-    * If you use a placeholder like `{{Role}}` in your email template or subject line, you **MUST** have an exact corresponding column named **`Role`** in your sheet.
-    * The names are case-sensitive and must match exactly without extra spaces.
+2. **Additional Placeholders:**
+    * A user might want some additional placeholders. You can define any placeholder in the email template using the format `{{PLACEHOLDER_NAME}}`.
+    * The name **MUST** be present in the attached Excel/CSV file as a column.
+    * **If any placeholder used in your template is completely missing from your file, the system will throw an error.** The column name mapping is case-insensitive, meaning `{{Role}}` in your template will match a column named `role` or `ROLE` in your file.
 
 3. **Tracking Columns (Auto-Generated):**
     * The script will automatically add two columns to your file: **`Status`** and **`Date_Sent`**.

@@ -32,7 +32,8 @@ class DataHandler:
     def get_missing_placeholders(self, placeholders):
         if self.df is None:
             return list(placeholders)
-        return [p for p in placeholders if p not in self.df.columns]
+        df_cols_lower = [str(c).lower() for c in self.df.columns]
+        return [p for p in placeholders if p.lower() not in df_cols_lower]
         
     def has_email_column(self):
         return self.email_col is not None
@@ -80,7 +81,8 @@ class DataHandler:
                 
             has_blank = False
             for p in placeholders:
-                if pd.isna(row[p]) or str(row[p]).strip() == '':
+                col_name = next((c for c in self.df.columns if str(c).lower() == p.lower()), None)
+                if col_name is None or pd.isna(row[col_name]) or str(row[col_name]).strip() == '':
                     has_blank = True
                     break
             if not has_blank:

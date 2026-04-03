@@ -226,8 +226,9 @@ Your contact file (`.csv` or `.xlsx`) must follow these rules:
 |---|---|---|---|---|
 | Jane | Doe | Acme Corp | jane@acme.com | Engineer |
 
-- Must include a column named exactly `Email` or `email`.
-- Any column used as a `{{placeholder}}` must exist with an exact matching name (case-sensitive, no extra spaces).
+- **Mandatory Placeholders**: The spreadsheet MUST include a column named exactly `Email` or `email` (see Option B below).
+- **Additional Placeholders**: Users can define any custom placeholder in the email template using the `{{PLACEHOLDER_NAME}}` format.
+- The name must be present in the attached Excel/CSV file as a column. The matching is case-insensitive, so `{{Role}}` will happily match a column called `role`. If any placeholder used in your template is completely missing from your file, the system will throw an error.
 
 ### Option B — Email column absent (auto-derivation)
 
